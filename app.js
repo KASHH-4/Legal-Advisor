@@ -1,5 +1,3 @@
-const API_URL = window.location.origin;
-
 // ==========================================
 // SETTINGS MANAGEMENT
 // ==========================================
@@ -802,8 +800,11 @@ async function submitAnswers() {
         // Format answers for the prompt
         const prompt = buildPrompt(answers);
         
+        // Get the Colab API URL directly from settings
         const colabApiUrl = getApiUrl();
-        const response = await fetch(`${API_URL}/api/generate`, {
+        
+        // Call Colab API directly (no backend proxy needed)
+        const response = await fetch(`${colabApiUrl}/api/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -812,8 +813,7 @@ async function submitAnswers() {
                 prompt: prompt,
                 max_new_tokens: 4096,
                 temperature: 0.7,
-                top_p: 0.9,
-                colab_api_url: colabApiUrl  // Send the colab URL to the backend
+                top_p: 0.9
             })
         });
         

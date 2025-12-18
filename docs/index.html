@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalDocs AI - Startup Legal Document Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Settings Sidebar -->
+    <div id="settingsSidebar" class="settings-sidebar">
+        <div class="settings-header">
+            <h3>Settings</h3>
+            <button class="settings-close" onclick="toggleSettings()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-section">
+                <label for="apiUrlInput">API URL (Ngrok Link)</label>
+                <input type="text" id="apiUrlInput" placeholder="https://your-ngrok-url.ngrok-free.app" />
+                <p class="settings-hint">Enter the ngrok URL from your Colab notebook</p>
+                <div id="apiUrlStatus" class="api-status"></div>
+            </div>
+            <button class="btn-primary" onclick="saveApiUrl()">Save Configuration</button>
+        </div>
+    </div>
+    
+    <!-- Settings Overlay -->
+    <div id="settingsOverlay" class="settings-overlay" onclick="toggleSettings()"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <button class="settings-icon" onclick="toggleSettings()" title="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
+            </button>
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 4L4 10V18C4 24 16 28 16 28C16 28 28 24 28 18V10L16 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 16L15 19L21 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>LegalDocs AI</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link">About</a>
+                <a href="#" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Landing Page -->
+    <section id="landingPage" class="section active">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Smart Legal Document Planning for Your Startup</h1>
+                <p class="hero-subtitle">Answer a few questions and get a personalized list of legal documents your startup needs—powered by AI</p>
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>No Login Required</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>AI-Powered Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Instant Results</span>
+                    </div>
+                </div>
+                <button class="cta-button" onclick="startQuestionnaire()">
+                    Generate My Document List
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <p class="hero-note">Takes only 2-3 minutes • Completely free</p>
+            </div>
+            <div class="hero-illustration">
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="50" y="80" width="300" height="240" rx="8" fill="#1a237e" opacity="0.1"/>
+                    <rect x="80" y="120" width="240" height="30" rx="4" fill="#d4af37" opacity="0.3"/>
+                    <rect x="80" y="170" width="200" height="20" rx="4" fill="#1a237e" opacity="0.2"/>
+                    <rect x="80" y="210" width="220" height="20" rx="4" fill="#1a237e" opacity="0.2"/>
+                    <rect x="80" y="250" width="180" height="20" rx="4" fill="#1a237e" opacity="0.2"/>
+                    <circle cx="320" cy="100" r="30" fill="#d4af37" opacity="0.5"/>
+                    <path d="M310 100L318 108L335 91" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Question Flow -->
+    <section id="questionPage" class="section">
+        <div class="question-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="question-counter" id="questionCounter">Question 1 of 30</div>
+            
+            <div class="question-card" id="questionCard">
+                <h2 class="question-text" id="questionText"></h2>
+                <div class="question-subtitle" id="questionSubtitle"></div>
+                
+                <!-- Text Input -->
+                <div class="answer-input" id="textInput" style="display: none;">
+                    <input type="text" id="textAnswer" placeholder="Enter your answer...">
+                </div>
+                
+                <!-- Textarea Input -->
+                <div class="answer-input" id="textareaInput" style="display: none;">
+                    <textarea id="textareaAnswer" rows="4" placeholder="Enter your answer..."></textarea>
+                </div>
+                
+                <!-- Number Input -->
+                <div class="answer-input" id="numberInput" style="display: none;">
+                    <input type="number" id="numberAnswer" placeholder="Enter number...">
+                </div>
+                
+                <!-- Button Options -->
+                <div class="answer-options" id="buttonOptions" style="display: none;"></div>
+                
+                <!-- Multi-select Checkboxes -->
+                <div class="answer-checkboxes" id="checkboxOptions" style="display: none;"></div>
+                
+                <div class="question-actions">
+                    <button class="btn-secondary" id="backBtn" onclick="goBack()" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Back
+                    </button>
+                    <button class="btn-primary" id="nextBtn" onclick="nextQuestion()">
+                        Next
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Page -->
+    <section id="loadingPage" class="section">
+        <div class="loading-container">
+            <!-- Folder Animation Area -->
+            <div class="folder-animation">
+                <svg class="folder-icon" width="200" height="160" viewBox="0 0 200 160" fill="none">
+                    <path d="M10 40 L10 140 C10 145 15 150 20 150 L180 150 C185 150 190 145 190 140 L190 50 C190 45 185 40 180 40 L90 40 L80 25 C78 22 75 20 72 20 L20 20 C15 20 10 25 10 30 Z" 
+                          fill="#1a237e" opacity="0.9" stroke="#d4af37" stroke-width="2"/>
+                    <path d="M10 50 L190 50" stroke="#d4af37" stroke-width="1" opacity="0.5"/>
+                </svg>
+                <div class="documents-flying-container" id="flyingDocs"></div>
+            </div>
+            
+            <h2 class="loading-title">Curating Your Document List...</h2>
+            
+            <!-- Progress Bar -->
+            <div class="loading-progress-container">
+                <div class="loading-progress-bar">
+                    <div class="loading-progress-fill" id="loadingProgressFill"></div>
+                </div>
+                <div class="loading-progress-text" id="loadingProgressText">0%</div>
+            </div>
+            
+            <!-- Rotating Facts -->
+            <div class="rotating-facts-container">
+                <div class="fact-display" id="factDisplay">
+                    <div class="fact-icon">💡</div>
+                    <p class="fact-text" id="factText"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Page -->
+    <section id="resultsPage" class="section">
+        <div class="results-container">
+            <div class="results-header">
+                <h1 class="results-title">Your Required Legal Documents</h1>
+                <p class="results-subtitle">Based on your startup profile, here are the documents you need</p>
+                <div class="results-actions">
+                    <button class="btn-download" onclick="downloadPDF()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Download PDF Report
+                    </button>
+                    <button class="btn-regenerate" onclick="regenerate()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        Regenerate
+                    </button>
+                    <button class="btn-secondary" onclick="startOver()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        </svg>
+                        Start Over
+                    </button>
+                </div>
+            </div>
+
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Document cards will be inserted here -->
+            </div>
+
+            <div class="optional-documents-section" id="optionalSection" style="display: none;">
+                <h2 class="section-title">Optional Documents</h2>
+                <p class="section-subtitle">Consider these as your startup grows</p>
+                <div class="documents-grid" id="optionalDocumentsGrid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>LegalDocs AI</h3>
+                <p>AI-powered legal document planning for startups</p>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Disclaimer</a>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">API Reference</a>
+                <a href="#">Support</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <a href="#">Email Us</a>
+                <a href="#">Schedule Call</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 LegalDocs AI. All rights reserved. | This tool provides informational guidance only and does not constitute legal advice.</p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

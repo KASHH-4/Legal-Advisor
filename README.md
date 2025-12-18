@@ -1,6 +1,6 @@
-# 🤖 Mistral Fine-tuned Model - Colab + Local Frontend
+# 🤖 Mistral Legal Advisor - Colab + Local Frontend
 
-A Flask-based frontend server that connects to a Mistral model running on Google Colab. The model runs on Colab's GPU, and your local Flask server provides a beautiful web interface.
+A Flask-based frontend server that connects to a fine-tuned Mistral Legal Advisor model running on Google Colab. The model runs on Colab's GPU and generates comprehensive legal document lists for startups, while your local Flask server provides a beautiful web interface.
 
 ## 🏗️ Architecture
 
@@ -17,61 +17,111 @@ A Flask-based frontend server that connects to a Mistral model running on Google
 ## 📁 Project Structure
 
 ```
-e:\EDI\hf-node-app\
-├── app.py                      # Flask server (proxies to Colab)
-├── colab_model_server.ipynb    # Run this on Google Colab
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-├── .env                        # Configuration (create this)
+Legal-Advisor/
+├── app.py                              # Flask server (proxies to Colab)
+├── colab_mistral_model_server.ipynb    # Run this on Google Colab
+├── requirements.txt                    # Python dependencies
+├── README.md                           # This file
+├── Screenshots/                        # Application screenshots
 └── static/
-    ├── index.html              # Frontend UI
-    ├── app.js                  # Frontend logic
-    └── style.css               # Styling
+    ├── index.html                      # Frontend UI
+    ├── app.js                          # Frontend logic
+    └── style.css                       # Styling
 ```
 
 ## 🚀 Setup Instructions
 
 ### Step 1: Setup Colab Model Server
 
-1. Open `colab_model_server.ipynb` in Google Colab
-2. Get your tokens:
-   - **Hugging Face Token**: https://huggingface.co/settings/tokens
-   - **ngrok Token**: https://dashboard.ngrok.com/get-started/your-authtoken
-3. Run all cells in the notebook:
+1. **Open the Colab Notebook**
+   - Upload or open `colab_mistral_model_server.ipynb` in Google Colab
+
+2. **Get Your Tokens**
+   - **Hugging Face Token**: Visit https://huggingface.co/settings/tokens and create a new token
+   - **ngrok Token**: Visit https://dashboard.ngrok.com/get-started/your-authtoken and copy your authtoken
+
+3. **Add Tokens in Colab**
+   - In the Colab notebook, locate the cell where tokens are required
+   - Add your **Hugging Face token** when prompted or in the designated cell
+   - Add your **ngrok authtoken** in the ngrok configuration cell
+   - These tokens are needed for authentication and creating the public tunnel
+
+4. **Run All Cells in the Notebook**
    - Install dependencies
    - Login to Hugging Face
    - Configure ngrok
-   - Load the Mistral model
+   - Load the Mistral model (this may take a few minutes)
    - Start the Flask API server
-4. **Copy the ngrok URL** (looks like: `https://xxxx-xx-xx-xx-xx.ngrok-free.app`)
+
+5. **Copy the ngrok URL**
+   - After running all cells, you'll see an ngrok URL (looks like: `https://xxxx-xx-xx-xx-xx.ngrok-free.app`)
+   - **Copy this URL** - you'll need it for the frontend
 
 ### Step 2: Setup Local Frontend
 
-1. **Create `.env` file** in the project root:
-   ```bash
-   API_URL=https://xxxx-xx-xx-xx-xx.ngrok-free.app
-   PORT=7860
-   ```
-
-2. **Install Python dependencies**:
+1. **Install Python Dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the Flask server**:
+2. **Run the Flask Server**
    ```bash
    python app.py
    ```
 
-4. **Open your browser**:
-   ```
-   http://localhost:7860
-   ```
+3. **Open Your Browser**
+   - Navigate to: `http://localhost:7860`
+
+4. **Configure the Frontend**
+   - In the web interface, click on the settings icon
+   - Paste the ngrok URL from Step 1 into the "Colab API URL" field
+   - Start generating text!  
+
+<br>
+<br>
+
+---
+
+## 📸 Screenshots
+
+### Frontend Landing Page
+This is the home page and main landing page of the application.
+
+![Screenshot 1](Screenshots/Screenshot-1.png)
+
+### Settings - API URL Configuration
+Paste the ngrok URL from the Colab notebook here to connect the frontend to the model server.
+
+![Screenshot 2](Screenshots/Screenshot-2.png)
+
+### Questions Interface
+Question interface for multiple-choice options.
+
+![Screenshot 3](Screenshots/Screenshot-3.png)
+
+Interface for multi-select options.
+
+![Screenshot 4](Screenshots/Screenshot-4.png)
+
+### Loading Screen
+Frontend display shown while the model is generating the response.
+
+![Screenshot 5](Screenshots/Screenshot-5.png)
+
+### Generated Response
+Example of the model generating a comprehensive legal document list based on the questionnaire responses. This includes an option to export the result as a PDF.
+
+![Screenshot 6](Screenshots/Screenshot-6.png)  
+
+<br>
+<br>
+
+---
 
 ## 🎯 How It Works
 
 1. **User enters a prompt** in the web interface
-2. **Frontend** (app.js) sends a POST request to local Flask server
+2. **Frontend** (app.js) sends a POST request to local Flask server with the Colab API URL
 3. **Flask server** (app.py) proxies the request to Colab via ngrok URL
 4. **Colab** processes the prompt using the Mistral model on GPU
 5. **Response flows back**: Colab → Flask → Browser
@@ -85,14 +135,13 @@ e:\EDI\hf-node-app\
 Serves the frontend web interface
 
 #### `GET /api/health`
-Check if the server is running and Colab API is configured
+Check if the server is running
 
 **Response:**
 ```json
 {
   "status": "ok",
-  "message": "Frontend server is running",
-  "colab_api_configured": true
+  "message": "Frontend server is running"
 }
 ```
 
@@ -102,17 +151,18 @@ Generate text using the model (proxies to Colab)
 **Request:**
 ```json
 {
-  "prompt": "Write a short story about a robot",
-  "max_new_tokens": 256,
-  "temperature": 0.7,
-  "top_p": 0.9
+  "prompt": "Generate legal documents for a tech startup...",
+  "max_new_tokens": 2048,
+  "temperature": 0.5,
+  "top_p": 0.9,
+  "colab_api_url": "https://xxxx-xx-xx-xx-xx.ngrok-free.app"
 }
 ```
 
 **Response:**
 ```json
 {
-  "generated_text": "Once upon a time, there was a robot..."
+  "generated_text": "{\"required_documents\": [...], \"descriptions\": [...]}"
 }
 ```
 
@@ -125,31 +175,24 @@ Direct model inference endpoint
 
 ## ⚙️ Configuration
 
-### Environment Variables (.env)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `API_URL` | ngrok URL from Colab | `https://xxxx.ngrok-free.app` |
-| `PORT` | Local server port | `7860` |
-
 ### Model Parameters
 
 Adjust these in the web interface:
 
-- **Max Tokens**: 50-512 (how much text to generate)
-- **Temperature**: 0.1-2.0 (creativity level)
-- **Top P**: 0.1-1.0 (nucleus sampling)
+- **Max Tokens**: 512-2048 (length of generated document list, default: 2048)
+- **Temperature**: 0.1-1.0 (response consistency, default: 0.5)
+- **Top P**: 0.1-1.0 (nucleus sampling, default: 0.9)
 
 ## 🛠️ Troubleshooting
 
 ### "Cannot connect to Colab API"
 - ✅ Check if Colab notebook is running
-- ✅ Verify ngrok URL is correct in `.env`
+- ✅ Verify ngrok URL is correct in the frontend settings
 - ✅ Make sure ngrok cell in Colab has run successfully
 
 ### "API_URL not configured"
-- ✅ Create `.env` file in project root
-- ✅ Add `API_URL=your_ngrok_url`
+- ✅ Enter the ngrok URL in the frontend settings (gear icon)
+- ✅ Make sure you copied the complete URL from Colab
 
 ### "Request timeout"
 - ✅ Model is loading (first request takes longer)
@@ -163,48 +206,45 @@ Adjust these in the web interface:
 
 ## 📝 Notes
 
-- **Colab session expires** after inactivity (~12 hours on free tier)
+- **Colab session expires** after inactivity (~6 hours on free tier)
 - **ngrok URL changes** each time you restart the Colab notebook
-- **Update `.env`** with the new ngrok URL after restarting
+- **Update the frontend settings** with the new ngrok URL after restarting
 - **Free Colab** has usage limits - consider Colab Pro for heavy use
-- **Model:** `KASHH-4/mistral_fine-tuned` loaded with 4-bit quantization
+- **Model:** `KASHH-4/Mistral-Model-Legal-Advisor` loaded with 4-bit quantization
+- **Purpose:** Generates comprehensive JSON lists of required legal documents for startups
 
 ## 🎨 Frontend Features
 
 - ✨ Modern, responsive UI
-- ⚙️ Advanced settings (temperature, tokens, top_p)
-- 🎯 Real-time status updates
-- 📊 Loading indicators
+- 📋 Multi-step questionnaire for startup information
+- ⚙️ Configurable Colab API URL via settings
+- 🎯 Real-time generation status updates
+- 📊 Loading indicators during model inference
 - ❌ Error handling with clear messages
-- 🔄 Ctrl+Enter to generate
+- 📄 Export generated legal document lists as PDF
 
 ## 🔐 Security Notes
 
-- Keep your **Hugging Face token** private
-- Keep your **ngrok token** private
-- Don't commit `.env` file to git
-- ngrok URLs are public but temporary
+- Keep your **Hugging Face token** private - never share it publicly
+- Keep your **ngrok token** private - never commit it to git
+- ngrok URLs are public but temporary - they expire when the Colab session ends
+- The API URL is configured in the frontend, not in environment files
 
 ## 📦 Dependencies
 
 - **Flask**: Web server framework
 - **Flask-CORS**: Cross-origin resource sharing
 - **requests**: HTTP library for API calls
-- **python-dotenv**: Environment variable management
 
-## 🚀 Production Tips
+All dependencies are listed in `requirements.txt`  
 
-For production deployment:
-1. Use a permanent API endpoint (not ngrok)
-2. Add authentication
-3. Implement rate limiting
-4. Set up proper logging
-5. Use a production WSGI server (gunicorn)
-6. Add request queuing for multiple users
+<br>
+<br>
 
 ---
 
 **Model by:** KASHH-4  
-**Model:** mistral_fine-tuned  
+**Model:** Mistral-Model-Legal-Advisor  
+**Purpose:** Legal Document Generator for Startups  
 **Platform:** Google Colab + Local Flask
 

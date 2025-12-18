@@ -803,11 +803,15 @@ async function submitAnswers() {
         // Get the Colab API URL directly from settings
         const colabApiUrl = getApiUrl();
         
+        console.log('🚀 Calling Colab API:', colabApiUrl);
+        console.log('📝 Prompt length:', prompt.length);
+        
         // Call Colab API directly (no backend proxy needed)
         const response = await fetch(`${colabApiUrl}/api/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 prompt: prompt,
@@ -817,12 +821,16 @@ async function submitAnswers() {
             })
         });
         
+        console.log('📡 Response status:', response.status);
+        
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            console.error('❌ API Error:', errorData);
             throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('✅ Received response');
         
         // Parse the generated text as JSON
         const generatedText = data.generated_text;

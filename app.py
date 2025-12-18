@@ -2,21 +2,14 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
 
-# Get Colab API URL from environment variable
-COLAB_API_URL = os.getenv('API_URL', '')
-
 print("\n" + "="*80)
 print("🚀 MISTRAL MODEL - Frontend Server")
 print("="*80)
-print(f"Colab API URL: {COLAB_API_URL if COLAB_API_URL else '❌ NOT SET - Please configure .env file'}")
+print("API URL will be provided from frontend settings")
 print("="*80 + "\n")
 
 # Serve static files
@@ -34,8 +27,7 @@ def serve_static(path):
 def health():
     return jsonify({
         'status': 'ok',
-        'message': 'Frontend server is running',
-        'colab_api_configured': bool(COLAB_API_URL)
+        'message': 'Frontend server is running'
     })
 
 # Generate endpoint - proxies to Colab API
@@ -45,28 +37,28 @@ def generate():
     try:
         data = request.json
         prompt = data.get('prompt', '')
-        max_new_tokens = data.get('max_new_tokens', 4096)  # Increased to 4096 tokens
-        temperature = data.get('temperature', 0.7)
+        max_new_tokens = data.get('max_new_tokens', 2048)
+        temperature = data.get('temperature', 0.5)
         top_p = data.get('top_p', 0.9)
+        colab_api_url = data.get('colab_api_url', '')
         
         if not prompt:
             return jsonify({'error': 'No prompt provided'}), 400
         
-        if not COLAB_API_URL:
-            return jsonify({'error': 'API_URL not configured. Please set it in .env file'}), 500
+        if not colab_api_url:
+            return jsonify({'error': 'API URL not configured. Please set it in the frontend settings.'}), 400
         
         print(f"\n{'='*80}", flush=True)
         print(f"🚀 NEW REQUEST - LEGAL DOCUMENT GENERATION", flush=True)
         print(f"Prompt length: {len(prompt)} characters", flush=True)
         print(f"Max tokens requested: {max_new_tokens}", flush=True)
-        print(f"Forwarding to Colab API: {COLAB_API_URL}", flush=True)
+        print(f"Forwarding to Colab API: {colab_api_url}", flush=True)
         
         start_time = time.time()
         
         # Forward request to Colab API (using /api/generate endpoint)
-        # No retry logic - single attempt with 10-minute timeout
         response = requests.post(
-            f"{COLAB_API_URL}/api/generate",
+            f"{colab_api_url}/api/generate",
             json={
                 'prompt': prompt,
                 'max_new_tokens': max_new_tokens,
@@ -88,19 +80,19 @@ def generate():
         
         print(f"✅ Generated in {elapsed:.2f}s", flush=True)
         print(f"📊 Response length: {len(generated_text)} characters", flush=True)
-        print(f"\n📄 COMPLETE OUTPUT:", flush=True)
+        print(f"\n📄 OUTPUT:", flush=True)
         print(f"{'-'*80}", flush=True)
-        print(generated_text, flush=True)
+        print(generated_text[:500] + "..." if len(generated_text) > 500 else generated_text, flush=True)
         print(f"{'-'*80}\n", flush=True)
         
         return jsonify({'generated_text': generated_text})
         
     except requests.exceptions.Timeout:
         print(f"❌ ERROR: Request timeout after 10 minutes", flush=True)
-        return jsonify({'error': 'timeout', 'message': 'Request took longer than 10 minutes'}), 504
+        return jsonify({'error': 'Request took longer than 10 minutes'}), 504
         
     except requests.exceptions.ConnectionError:
-        error_msg = 'Cannot connect to Colab API - Check if notebook is running'
+        error_msg = 'Cannot connect to Colab API - Check if notebook is running and URL is correct'
         print(f"❌ ERROR: {error_msg}", flush=True)
         return jsonify({'error': error_msg}), 503
         

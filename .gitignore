@@ -9,12 +9,6 @@ env/
 ENV/
 .venv
 
-# Environment variables (contains sensitive tokens/URLs)
-# Note: .env.example is NOT ignored - it's a template without sensitive data
-.env
-.env.local
-.env.*.local
-
 # Hugging Face
 .cache/
 flagged/

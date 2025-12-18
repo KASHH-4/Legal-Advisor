@@ -1,5 +1,92 @@
 const API_URL = window.location.origin;
 
+// ==========================================
+// SETTINGS MANAGEMENT
+// ==========================================
+const STORAGE_KEY = 'legaldocs_api_url';
+
+// Initialize API URL from localStorage on page load
+function initializeApiUrl() {
+    const storedUrl = localStorage.getItem(STORAGE_KEY);
+    if (storedUrl) {
+        console.log('✅ API URL configured');
+    } else {
+        console.warn('⚠️ API URL not configured');
+    }
+}
+
+// Toggle settings sidebar
+function toggleSettings() {
+    const sidebar = document.getElementById('settingsSidebar');
+    const overlay = document.getElementById('settingsOverlay');
+    const input = document.getElementById('apiUrlInput');
+    
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Load current URL when opening
+    if (sidebar.classList.contains('active')) {
+        const storedUrl = localStorage.getItem(STORAGE_KEY);
+        input.value = storedUrl || '';
+        
+        // Update status display
+        if (storedUrl) {
+            updateApiStatus('success', 'Current API URL is configured');
+        } else {
+            updateApiStatus('warning', 'No API URL configured yet');
+        }
+    }
+}
+
+// Save API URL to localStorage
+function saveApiUrl() {
+    const input = document.getElementById('apiUrlInput');
+    const url = input.value.trim();
+    
+    if (!url) {
+        updateApiStatus('error', 'Please enter a valid URL');
+        return;
+    }
+    
+    // Basic URL validation
+    try {
+        const urlObj = new URL(url);
+        if (!urlObj.protocol.match(/^https?:$/)) {
+            updateApiStatus('error', 'URL must start with http:// or https://');
+            return;
+        }
+    } catch (e) {
+        updateApiStatus('error', 'Invalid URL format');
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem(STORAGE_KEY, url);
+    updateApiStatus('success', 'API URL saved successfully!');
+    
+    // Close sidebar after a short delay
+    setTimeout(() => {
+        toggleSettings();
+    }, 1500);
+}
+
+// Update API status message
+function updateApiStatus(type, message) {
+    const statusDiv = document.getElementById('apiUrlStatus');
+    statusDiv.className = `api-status ${type}`;
+    statusDiv.textContent = message;
+}
+
+// Get API URL for requests
+function getApiUrl() {
+    return localStorage.getItem(STORAGE_KEY);
+}
+
+// Check if API URL is configured
+function isApiConfigured() {
+    return !!localStorage.getItem(STORAGE_KEY);
+}
+
 const questions = [
     {
         id: 'startup_name',
@@ -702,6 +789,12 @@ function goBack() {
 // API SUBMISSION
 // ==========================================
 async function submitAnswers() {
+    // Check if API URL is configured
+    if (!isApiConfigured()) {
+        alert('⚠️ API URL not configured!\n\nPlease click the settings icon (⚙️) in the top left corner and enter your ngrok URL from Google Colab.');
+        return;
+    }
+    
     showSection('loadingPage');
     animateLoadingSteps();
     
@@ -709,6 +802,7 @@ async function submitAnswers() {
         // Format answers for the prompt
         const prompt = buildPrompt(answers);
         
+        const colabApiUrl = getApiUrl();
         const response = await fetch(`${API_URL}/api/generate`, {
             method: 'POST',
             headers: {
@@ -718,12 +812,14 @@ async function submitAnswers() {
                 prompt: prompt,
                 max_new_tokens: 4096,
                 temperature: 0.7,
-                top_p: 0.9
+                top_p: 0.9,
+                colab_api_url: colabApiUrl  // Send the colab URL to the backend
             })
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -737,7 +833,7 @@ async function submitAnswers() {
         
     } catch (error) {
         console.error('Error:', error);
-        alert(`Error generating documents: ${error.message}\n\nPlease try again.`);
+        alert(`Error generating documents: ${error.message}\n\nPlease check:\n1. Your ngrok URL is correct in settings\n2. Google Colab notebook is running\n3. ngrok tunnel is active`);
         showSection('questionPage');
     }
 }
@@ -1181,3 +1277,6 @@ document.addEventListener('keydown', (e) => {
 // ==========================================
 console.log('LegalDocs AI initialized');
 console.log(`Total questions: ${questions.length}`);
+
+// Initialize API URL on page load
+initializeApiUrl();

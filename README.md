@@ -2,15 +2,6 @@
 
 A Flask-based frontend server that connects to a Mistral model running on Google Colab. The model runs on Colab's GPU, and your local Flask server provides a beautiful web interface.
 
-**Model:** [`KASHH-4/Mistral-Model-Legal-Advisor`](https://huggingface.co/KASHH-4/Mistral-Model-Legal-Advisor)
-
-## ⚠️ Important Security Notice
-
-This project requires sensitive tokens and API URLs:
-- **Never commit** your `.env` file (it's already in `.gitignore`)
-- **Keep private:** Hugging Face tokens, ngrok tokens, and API URLs
-- See [🔐 Security Notes](#-security-notes) section for details
-
 ## 🏗️ Architecture
 
 ```
@@ -58,15 +49,9 @@ e:\EDI\hf-node-app\
 
 1. **Create `.env` file** in the project root:
    ```bash
-   # Copy the example file
-   cp .env.example .env
-   
-   # Then edit .env and add your ngrok URL:
    API_URL=https://xxxx-xx-xx-xx-xx.ngrok-free.app
    PORT=7860
    ```
-   
-   **⚠️ Important:** Never commit your `.env` file - it's already in `.gitignore`
 
 2. **Install Python dependencies**:
    ```bash
@@ -182,7 +167,7 @@ Adjust these in the web interface:
 - **ngrok URL changes** each time you restart the Colab notebook
 - **Update `.env`** with the new ngrok URL after restarting
 - **Free Colab** has usage limits - consider Colab Pro for heavy use
-- **Model:** [`KASHH-4/Mistral-Model-Legal-Advisor`](https://huggingface.co/KASHH-4/Mistral-Model-Legal-Advisor) loaded with 4-bit quantization
+- **Model:** `KASHH-4/mistral_fine-tuned` loaded with 4-bit quantization
 
 ## 🎨 Frontend Features
 
@@ -195,23 +180,10 @@ Adjust these in the web interface:
 
 ## 🔐 Security Notes
 
-- Keep your **Hugging Face token** private (never commit to git)
-- Keep your **ngrok token** private (never commit to git)
-- Don't commit `.env` file to git (already in `.gitignore`)
+- Keep your **Hugging Face token** private
+- Keep your **ngrok token** private
+- Don't commit `.env` file to git
 - ngrok URLs are public but temporary
-- **Important:** The `.env` file contains sensitive API URLs and should never be shared or committed to version control
-
-## 📄 License
-
-This project is licensed under a Custom Software License Agreement. See the [LICENSE](LICENSE) file for details.
-
-**Summary:**
-- ✅ Free for personal and educational use
-- ✅ Study and learn from the code
-- ❌ No commercial use without permission
-- ❌ No redistribution
-
-**Legal Disclaimer:** This software is for educational purposes only and does not constitute legal advice. Consult a qualified attorney for legal matters.
 
 ## 📦 Dependencies
 
@@ -232,7 +204,7 @@ For production deployment:
 
 ---
 
-**Model by:** KASHH-4 (organisation)  
-**Model:** [`KASHH-4/Mistral-Model-Legal-Advisor`](https://huggingface.co/KASHH-4/Mistral-Model-Legal-Advisor)  
+**Model by:** KASHH-4  
+**Model:** mistral_fine-tuned  
 **Platform:** Google Colab + Local Flask
 
